@@ -2,12 +2,14 @@ package BuilderPattern.Order;
 
 import models.Order;
 
+import java.util.Date;
+
 public class OrderBuilder implements IOrderBuilder {
     public String id;
     public String customerId;
     public String productId;
     public int quantity;
-    public String date;
+    public Date date;
     public boolean status;
 
     @Override
@@ -35,7 +37,7 @@ public class OrderBuilder implements IOrderBuilder {
     }
 
     @Override
-    public OrderBuilder addDate(String date) {
+    public OrderBuilder addDate(Date date) {
         this.date = date;
         return this;
     }

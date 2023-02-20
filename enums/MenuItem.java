@@ -25,7 +25,9 @@ public enum MenuItem {
     ORDER_UPDATE("Update an Order", UserRole.ADMIN),
     ORDER_UPDATE_INFORMATION("Update Order's Information", UserRole.ADMIN),
     ORDER_UPDATE_DELETE("Delete Order", UserRole.ADMIN),
-    ORDER_SAVE_TO_FILE("Save Customers to the file, named customers.txt", UserRole.ADMIN);
+    ORDER_SAVE_TO_FILE("Save Customers to the file, named customers.txt", UserRole.ADMIN),
+
+    CHOOSING_PRODUCTS("Choose a Product", UserRole.USER);
 
     private final String label;
     private final UserRole role;

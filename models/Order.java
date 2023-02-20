@@ -1,8 +1,12 @@
 package models;
 
+import managements.CustomerManagement;
 import managements.OrderManagement;
-import managements.ProductManagement;
+import utils.Menu;
 import utils.Util;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Order {
 
@@ -10,10 +14,10 @@ public class Order {
     private String customerId;
     private String productId;
     private int quantity;
-    private String date;
+    private Date date;
     private boolean status;
 
-    public Order(String id, String customerId, String productId, int quantity, String date, boolean status) {
+    public Order(String id, String customerId, String productId, int quantity, Date date, boolean status) {
         this.id = id;
         this.customerId = customerId;
         this.productId = productId;
@@ -25,6 +29,9 @@ public class Order {
     public Order() {
     }
 
+    public String getId() {
+        return id;
+    }
 
     public String getCustomerId() {
         return customerId;
@@ -37,26 +44,22 @@ public class Order {
     public void input() {
         id = Util.inputIdWithFormat("order's id", "not empty,unique,format: \"Dxxx\"",
                 OrderManagement.getInstance().checkUniqueId, "D[0-9]{3}");
-        customerId = Util.inputWithFormat("customer's id", "not empty,format: \"Cxxx\"", "C[0-9]{3}");
-        productId = Util.inputExistId("product's id", "not empty,format: \"Pxxx\"", "P[0-9]{3}",
-                ProductManagement.getInstance().checkExistId);
+        customerId = CustomerManagement.getInstance().inputCustomerId();
+        productId = Menu.getChoiceProductId();
         quantity = Util.inputPositiveInteger("order's quantity");
-        date = Util.inputString("order's date");
+        date = Util.inputDate("order's date");
         status = Util.inputBoolean("order's status");
     }
 
     public void update() {
-        customerId = Util.inputString("customer's id");
-        productId = Util.inputString("product's id");
-        quantity = Util.inputPositiveIntegerUpdate("order's quantity", quantity);
-        date = Util.inputStringUpdate("order's date", date);
         status = Util.inputBooleanUpdate("order's status", status);
     }
 
     @Override
     public String toString() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         return id + "," + customerId + "," + productId + "," + quantity
-                + "," + date + "," + status;
+                + "," + dateFormat.format(date) + "," + status;
     }
 
 }

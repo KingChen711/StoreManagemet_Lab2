@@ -3,6 +3,8 @@ package BuilderPattern.Order;
 
 import models.Order;
 
+import java.util.Date;
+
 public interface IOrderBuilder {
     OrderBuilder addId(String id);
 
@@ -12,7 +14,7 @@ public interface IOrderBuilder {
 
     OrderBuilder addQuantity(int quantity);
 
-    OrderBuilder addDate(String date);
+    OrderBuilder addDate(Date date);
 
     OrderBuilder addStatus(boolean status);
 

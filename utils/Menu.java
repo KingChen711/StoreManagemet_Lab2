@@ -1,8 +1,12 @@
 package utils;
 
 import enums.MenuItem;
+import managements.CustomerManagement;
+import managements.ProductManagement;
 import managements.UserManagement;
 import models.User;
+
+import java.util.List;
 
 public final class Menu {
 
@@ -37,8 +41,8 @@ public final class Menu {
     };
 
     private static final MenuItem[] orderUpdateOptions = {
-            MenuItem.ORDER_UPDATE_INFORMATION,
             MenuItem.ORDER_UPDATE_DELETE,
+            MenuItem.ORDER_UPDATE_INFORMATION,
     };
 
     private static final MenuItem[] confirmOptions = {
@@ -75,6 +79,20 @@ public final class Menu {
         return optionList[choice];
     }
 
+    private static String getChoiceId(List<String> Ids, String menuCaption) {
+        System.out.println("*********************************************");
+        System.out.println(menuCaption);
+        for (int i = 0; i < Ids.size(); i++) {
+            System.out.printf("(%d) -> %s%n", i, Ids.get(i));
+        }
+        System.out.println("*********************************************");
+
+        int choice = Util.inputIntegerWithRange("Please enter your choice", 0, Ids.size() - 1);
+        String chosenId = Ids.get(choice);
+        System.out.println("You have chosen " + chosenId);
+        return chosenId;
+    }
+
     private static int showOptionMenu(String menuCaption, MenuItem[] optionList) {
         int numItems = 1;
         System.out.println("*********************************************");
@@ -106,6 +124,14 @@ public final class Menu {
             };
         }
         return optionList;
+    }
+
+    public static String getChoiceCustomerId() {
+        return getChoiceId(CustomerManagement.getInstance().getCustomerIds(), "Choose a customer");
+    }
+
+    public static String getChoiceProductId() {
+        return getChoiceId(ProductManagement.getInstance().getProductIds(), "Choose a product");
     }
 
     public MenuItem getUserChoice() {

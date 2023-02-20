@@ -7,18 +7,54 @@ import utils.Menu;
 import utils.Util;
 
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 public final class OrderManagement {
 
     private static OrderManagement instance;
     private List<Order> orderList;
-    public final Predicate<String> checkUniqueId = checkedId -> orderList.stream()
-            .noneMatch(order -> order.getId().equals(checkedId));
+    public final Predicate<String> checkUniqueId =
+            checkedId -> orderList
+                    .stream()
+                    .noneMatch(order -> order.getId().equals(checkedId));
+    Runnable addAnOrder = () -> {
+        Order newOrder = new Order();
+        newOrder.input();
+        orderList.add(newOrder);
+        System.out.println("\nCreate new order successfully!\n");
+    };
+    Runnable updateAnOrder = () -> {
+        String searchedId = Util.inputString("order's id");
+        Order foundOrder = findById(searchedId);
+
+        if (foundOrder == null) {
+            System.out.println("\nFail: Customer’s id does not exist\n");
+            return;
+        }
+
+        switch (Menu.getUpdateOrderOption()) {
+            case ORDER_UPDATE_DELETE -> {
+                if (Menu.getConfirm() == MenuItem.CONFIRM_YES) {
+                    orderList.remove(foundOrder);
+                    System.out.println("\nSuccess: Delete order successfully!\n");
+                } else {
+                    System.out.println("\nFail: Delete order fail!");
+                    System.out.println("You have refuse to delete order\n");
+                }
+            }
+            case ORDER_UPDATE_INFORMATION -> {
+                foundOrder.update();
+                System.out.println("\nSuccess: Update order information successfully!\n");
+            }
+            default -> System.out.println("\nError: Update order failed!\n");
+        }
+    };
 
     private OrderManagement() {
 
@@ -32,8 +68,10 @@ public final class OrderManagement {
     }
 
     public void listAllOrders() {
-        orderList.sort(new CustomerNameComparator());
-        orderList.forEach(order -> System.out.println(order.toString()));
+        orderList
+                .stream()
+                .sorted(new CustomerNameComparator())
+                .forEach(System.out::println);
 
     }
 
@@ -47,73 +85,22 @@ public final class OrderManagement {
     }
 
     public void addOrder() {
-
-        if (UserManagement.getInstance().isUser()) {
-            return;
-        }
-
-        while (true) {
-            Order newOrder = new Order();
-            newOrder.input();
-            orderList.add(newOrder);
-            System.out.println("\nCreate new order successfully!\n");
-
-            System.out.println("Do you want to add one more order?");
-            if (Menu.getConfirm() == MenuItem.CONFIRM_NO) {
-                return;
-            }
-        }
+        if (UserManagement.getInstance().isUser()) return;
+        Util.multiUse(addAnOrder, "Do you want to add more orders?");
     }
 
     public void updateOrder() {
-
-        if (UserManagement.getInstance().isUser()) {
-            return;
-        }
-
-        MenuItem optionUpdate = Menu.getUpdateOrderOption();
-        String searchedId = Util.inputString("order's id");
-        Order foundOrder = findById(searchedId);
-
-        if (foundOrder == null) {
-            System.out.println("\nFail: Customer’s id does not exist\n");
-            return;
-        }
-
-        boolean checkError = false;
-        if (optionUpdate == MenuItem.ORDER_UPDATE_DELETE) {
-            if (Menu.getConfirm() == MenuItem.CONFIRM_YES) {
-                orderList.remove(foundOrder);
-                System.out.println("\nSuccess: Delete order successfully!\n");
-            } else if (Menu.getConfirm() == MenuItem.CONFIRM_NO) {
-                System.out.println("\nFail: Delete order fail!\n");
-                System.out.println("\nYou have refuse to delete order\n");
-            } else {
-                checkError = true;
-            }
-        } else if (optionUpdate == MenuItem.ORDER_UPDATE_INFORMATION) {
-            foundOrder.update();
-            System.out.println("\nSuccess: Update order information successfully!\n");
-        } else {
-            checkError = true;
-        }
-
-        if (checkError) {
-            System.out.println("\nError: Update order failed!\n");
-        }
-
+        if (UserManagement.getInstance().isUser()) return;
+        Util.multiUse(updateAnOrder, "Do you want to update more orders?");
     }
 
     public void saveOrderList() {
 
-        if (UserManagement.getInstance().isUser()) {
-            return;
-        }
+        if (UserManagement.getInstance().isUser()) return;
+
         String currentWorkingDirectory = System.getProperty("user.dir");
         File file = new File(currentWorkingDirectory + "/src/resources/orders.txt");
-        try (
-                FileWriter fw = new FileWriter(file);
-                BufferedWriter bw = new BufferedWriter(fw)) {
+        try (FileWriter fw = new FileWriter(file); BufferedWriter bw = new BufferedWriter(fw)) {
 
             for (Order order : orderList) {
                 bw.write(order.toString());
@@ -130,51 +117,46 @@ public final class OrderManagement {
     }
 
     public Order findById(String id) {
-        Order foundOrder = null;
-        for (Order order : orderList) {
-            if (order.getId().equals(id)) {
-                foundOrder = order;
-                break;
-            }
-        }
-        return foundOrder;
+        return orderList
+                .stream()
+                .filter(order -> order.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
+
     public void readOrderList() {
-        List<Order> orders = new ArrayList<>();
+        orderList = new ArrayList<>();
         String currentWorkingDirectory = System.getProperty("user.dir");
         File file = new File(currentWorkingDirectory + "/src/resources/orders.txt");
-        try (
-                FileReader fr = new FileReader(file);
-                BufferedReader br = new BufferedReader(fr)) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        try (FileReader fr = new FileReader(file); BufferedReader br = new BufferedReader(fr)) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] texts = line.split(",");
-                Order newOrder = new OrderBuilder()
-                        .addId(texts[0])
-                        .addCustomerId(texts[1])
-                        .addProductId(texts[2])
-                        .addQuantity(Integer.parseInt(texts[3]))
-                        .addDate((texts[4]))
-                        .addStatus(Boolean.parseBoolean(texts[5]))
-                        .build();
+                Order newOrder =
+                        new OrderBuilder()
+                                .addId(texts[0])
+                                .addCustomerId(texts[1])
+                                .addProductId(texts[2])
+                                .addQuantity(Integer.parseInt(texts[3]))
+                                .addDate(dateFormat.parse(texts[4]))
+                                .addStatus(Boolean.parseBoolean(texts[5]))
+                                .build();
 
-                orders.add(newOrder);
+                orderList.add(newOrder);
             }
-        } catch (IOException | NumberFormatException e) {
+        } catch (IOException | NumberFormatException | ParseException e) {
             System.out.println(e.getMessage());
         }
-        orderList = orders;
     }
 
     private static class CustomerNameComparator implements Comparator<Order> {
+        private final Map<String, String> customerIdToName = CustomerManagement.getInstance().getMapIdToName();
+
         @Override
         public int compare(Order order1, Order order2) {
-            HashMap<String, String> customerIdToName = CustomerManagement.getInstance().getMapIdToName();
-            String customerName1 = customerIdToName.get(order1.getCustomerId());
-            String customerName2 = customerIdToName.get(order2.getCustomerId());
-            return customerName1.compareTo(customerName2);
+            return customerIdToName.get(order1.getCustomerId()).compareTo(customerIdToName.get(order2.getCustomerId()));
         }
     }
-
 }

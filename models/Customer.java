@@ -31,10 +31,16 @@ public class Customer {
     public void input() {
         id = Util.inputIdWithFormat("customer's id", "not empty,unique,format: \"Cxxx\"",
                 CustomerManagement.getInstance().checkUniqueId, "C[0-9]{3}");
+        input(id);
+    }
+
+    public void input(String id) {
+        this.id = id;
         name = Util.inputString("customer's name");
         address = Util.inputString("customer's address");
         phone = Util.inputStringLength("customer's phone", 10, 12);
     }
+
 
     public void update() {
         name = Util.inputStringUpdate("customer's name", name);
